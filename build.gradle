@@ -1,0 +1,168 @@
+buildscript{
+	ext {
+		restdocsApiSpecVersion = '0.17.1'
+		snippetsDir = file('build/generated-snippets')
+	}
+}
+
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.2.2'
+	id 'io.spring.dependency-management' version '1.1.4'
+
+	//restdocs + swagger
+	id 'org.asciidoctor.jvm.convert' version '3.3.1'
+	id 'com.epages.restdocs-api-spec' version "${restdocsApiSpecVersion}"
+	id 'org.hidetake.swagger.generator' version '2.18.2'
+}
+
+group = 'com.picpal'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	sourceCompatibility = '17'
+}
+
+configurations {
+	asciidoctorExt
+
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-logging'
+	implementation 'org.springframework.boot:spring-boot-test'
+	implementation 'org.springframework.session:spring-session-core'
+	implementation 'org.springframework.data:spring-data-commons'
+
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	runtimeOnly 'com.h2database:h2'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	// JUnit Jupiter는 spring-boot-starter-test에 포함되어 있으므로 별도 선언 불필요
+
+	// Mybatis
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+
+	// Apache POI for Excel handling
+	implementation 'org.apache.poi:poi:5.2.2'
+	implementation 'org.apache.poi:poi-ooxml:5.2.2'
+
+	// actuator
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	// lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+
+	// json
+	implementation 'com.googlecode.json-simple:json-simple:1.1'
+
+	// rest docs
+	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+
+	// swagger UI
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
+	testImplementation 'com.epages:restdocs-api-spec-mockmvc:' + restdocsApiSpecVersion
+	testImplementation 'com.squareup.okhttp3:mockwebserver'
+
+	// Quartz
+	implementation 'org.quartz-scheduler:quartz:2.3.2'
+	implementation 'org.springframework.boot:spring-boot-starter-quartz'
+
+	//jasypt
+	implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.4'
+
+	// jsoup (최신 버전으로 업데이트)
+	implementation 'org.jsoup:jsoup:1.17.2'
+
+	// Thymeleaf
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+
+	// 외부 jar 등록 테스트
+	implementation files('libs/util-common.jar')
+
+
+}
+
+// UTF-8 인코딩을 위한 compileJava 옵션 설정
+compileJava.options.encoding = 'UTF-8'
+
+// JavaCompile 타입의 모든 태스크에 대해 UTF-8 인코딩 적용
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+/*properties duplicate prevent*/
+tasks {
+	processResources{
+		duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+	}
+}
+
+tasks.withType(GenerateSwaggerUI){
+	dependsOn 'openapi3'
+
+	delete file('src/main/resources/static/docs')
+	copy{
+		from 'build/resources/main/static/docs'
+		into 'src/main/resources/static/docs/'
+	}
+}
+
+
+task copyDocument(type: Copy){
+	dependsOn asciidoctor
+	from file('build/docs/asciidoc')
+	into file('src/main/resources/static/docs')
+}
+
+test {
+	useJUnitPlatform()
+}
+
+bootJar{
+	dependsOn('openapi3')
+}
+
+openapi3{
+	server = "http://localhost:8080"
+	title = "Boilerplate DOCS"
+	description = "Boilerplate REST API TEST DOCS"
+	version = "0.0.1"
+	outputFileNamePrefix = 'boilerplate-1.0.0'
+	format = 'json'
+	outputDirectory = 'build/resources/main/static/docs'
+}
+
+asciidoctor {
+	configurations 'asciidoctorExt'
+	baseDirFollowsSourceFile()
+	inputs.dir snippetsDir
+	dependsOn test
+}
+
+asciidoctor.doFirst{
+	delete file('src/main/resources/static/docs')
+}
+
+
+
+
