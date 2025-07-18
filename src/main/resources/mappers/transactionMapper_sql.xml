@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.picpal.framework.monitoring.repository.mapper.TransactionMapper">
+
+    <!-- 거래 데이터 결과 맵 -->
+    <resultMap id="TransactionDataResultMap" type="com.picpal.framework.monitoring.repository.model.TransactionData">
+        <id property="id" column="id"/>
+        <result property="transactionDate" column="transaction_date"/>
+        <result property="amount" column="amount"/>
+        <result property="customerId" column="customer_id"/>
+        <result property="customerName" column="customer_name"/>
+        <result property="transactionType" column="transaction_type"/>
+        <result property="status" column="status"/>
+        <result property="description" column="description"/>
+        <result property="merchantId" column="merchant_id"/>
+        <result property="merchantName" column="merchant_name"/>
+        <result property="cardNumber" column="card_number"/>
+        <result property="cardType" column="card_type"/>
+        <result property="currency" column="currency"/>
+        <result property="country" column="country"/>
+        <result property="city" column="city"/>
+        <result property="ipAddress" column="ip_address"/>
+        <result property="deviceType" column="device_type"/>
+        <result property="channel" column="channel"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="riskLevel" column="risk_level"/>
+        <result property="fraudFlag" column="fraud_flag"/>
+        <result property="approvalCode" column="approval_code"/>
+        <result property="declineReason" column="decline_reason"/>
+        <result property="fee" column="fee"/>
+        <result property="tax" column="tax"/>
+        <result property="batchId" column="batch_id"/>
+        <result property="settlementId" column="settlement_id"/>
+    </resultMap>
+
+    <!-- 특정 기간의 모든 거래 데이터 조회 -->
+    <select id="selectTransactionsByDateRange" resultMap="TransactionDataResultMap">
+        SELECT 
+            t.id,
+            t.transaction_date,
+            t.amount,
+            t.customer_id,
+            c.customer_name,
+            t.transaction_type,
+            t.status,
+            t.description,
+            t.merchant_id,
+            m.merchant_name,
+            t.card_number,
+            t.card_type,
+            t.currency,
+            t.country,
+            t.city,
+            t.ip_address,
+            t.device_type,
+            t.channel,
+            t.created_at,
+            t.updated_at,
+            t.risk_level,
+            t.fraud_flag,
+            t.approval_code,
+            t.decline_reason,
+            t.fee,
+            t.tax,
+            t.batch_id,
+            t.settlement_id
+        FROM transaction_data t
+        LEFT JOIN customer c ON t.customer_id = c.customer_id
+        LEFT JOIN merchant m ON t.merchant_id = m.merchant_id
+        WHERE t.transaction_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY t.transaction_date DESC
+    </select>
+
+
+
+</mapper> 
