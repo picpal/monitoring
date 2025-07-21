@@ -38,51 +38,6 @@ Spring Boot 기반의 모니터링 프레임워크 프로젝트입니다.
 - **Swagger/OpenAPI 3.0**
 - **Spring REST Docs**
 
-## 📁 프로젝트 구조
-
-```
-src/
-├── main/
-│   ├── java/
-│   │   └── com/picpal/framework/
-│   │       ├── MonitoringApplication.java
-│   │       ├── common/
-│   │       │   ├── config/
-│   │       │   │   ├── JasyptConfig.java
-│   │       │   │   └── WebSecurityConfiguration.java
-│   │       │   ├── constant/
-│   │       │   ├── enums/
-│   │       │   ├── exception/
-│   │       │   └── utils/
-│   │       ├── monitoring/
-│   │       │   ├── controller/
-│   │       │   │   └── MonitoringViewController.java
-│   │       │   ├── repository/
-│   │       │   │   ├── model/
-│   │       │   │   │   └── MonitoringResult.java
-│   │       │   │   └── MonitoringResultRepository.java
-│   │       │   └── vo/
-│   │       │       └── TransactionAnalysisVO.java
-│   │       └── sample/
-│   │           ├── controller/
-│   │           ├── dto/
-│   │           ├── mapper/
-│   │           ├── repository/
-│   │           ├── service/
-│   │           └── vo/
-│   └── resources/
-│       ├── application.yml
-│       ├── application-local.yml
-│       ├── mappers/
-│   │   └── sampleMapper_sql.xml
-│       ├── templates/
-│   │   └── monitoring-report.html
-│       └── static/
-└── test/
-    └── java/
-        └── com/picpal/framework/
-```
-
 ## ⚙️ 설정
 
 ### Spring Boot 3.2.2 호환성
@@ -194,32 +149,30 @@ java -Djasypt.enc.pre=0000 -Djasypt.enc.post=1111 -jar build/libs/monitoring-0.0
 - **Username**: `ADMIN`
 - **Password**: `password`
 
-## 📚 API 문서
+## 📚 API 문서 (Swagger/OpenAPI & REST Docs)
 
-### 모니터링 API
-- **GET** `/monitoring/report` - 모니터링 리포트 뷰 (Thymeleaf 템플릿)
+### Swagger/OpenAPI
+- 실시간 API 문서는 Swagger UI를 통해 확인할 수 있습니다.
+- OpenAPI 문서: `http://localhost:8080/docs/open-api-3.0.1.json`
+- Swagger UI: `http://localhost:8080/docs/swagger`
 
-### 샘플 API
-- **GET** `/api/v1/sample` - 샘플 엔드포인트
+### REST Docs
+- 프로젝트에는 REST Docs 설정(`RestDocsConfig.java`)이 포함되어 있으나,
+  실제 REST Docs 스니펫을 생성하는 컨트롤러 테스트는 포함되어 있지 않습니다.
+- 향후 REST Docs 기반 문서 자동 생성을 원한다면,
+  `@WebMvcTest`, `@AutoConfigureRestDocs`, `MockMvc` 기반의 컨트롤러 테스트를 추가해야 합니다.
 
-### API 문서화
-- Swagger UI를 통해 실시간 API 문서를 확인할 수 있습니다
-- REST Docs를 통한 API 문서 자동 생성
-
-#### REST Docs 생성
-REST Docs는 테스트 실행 시 자동으로 생성됩니다:
-
-```bash
-# REST Docs 생성 (테스트 실행)
-./gradlew test
-
-# REST Docs 문서 생성
-./gradlew asciidoctor
+예시:
+```java
+@WebMvcTest(MonitoringApiController.class)
+@AutoConfigureRestDocs
+class MonitoringApiControllerTest {
+    // ...
+}
 ```
+테스트 실행 시 스니펫이 `build/generated-snippets/`에 생성됩니다.
 
-생성된 문서는 다음 위치에서 확인할 수 있습니다:
-- **REST Docs 스니펫**: `build/generated-snippets/`
-- **최종 문서**: `src/main/resources/static/docs/`
+---
 
 ## 🔧 개발 환경 설정
 
@@ -263,14 +216,16 @@ REST Docs는 테스트 실행 시 자동으로 생성됩니다:
 - Thymeleaf 템플릿 엔진
 - 모니터링 리포트 뷰
 
-## 🧪 테스트
+## 🧪 테스트 및 코드 커버리지
+
+- Jacoco로 코드 커버리지 측정
+- 비즈니스 로직(서비스, 레포, 컨트롤러 등)은 80% 이상 커버리지 목표
+
+### 실행 방법
 
 ```bash
-# 전체 테스트 실행
-./gradlew test
-
-# 특정 테스트 실행
-./gradlew test --tests "*JasyptConfigTest*"
+# 전체 테스트 및 커버리지 리포트 생성
+./gradlew test jacocoTestReport
 ```
 
 ### Jasypt 암호화 테스트
@@ -284,11 +239,10 @@ JasyptConfigTest는 설정 파일의 민감한 정보를 암호화하는 데 사
 ### REST Docs 테스트
 API 문서 자동 생성을 위한 REST Docs 테스트가 포함되어 있습니다:
 
-- **위치**: `src/test/java/com/picpal/framework/sample/controller/SampleControllerTest.java`
-- **기능**: API 엔드포인트 테스트 및 문서 자동 생성
-- **설정**: `@AutoConfigureRestDocs` 어노테이션으로 REST Docs 자동 설정
-- **사용법**: 테스트 실행 시 API 문서 스니펫이 자동 생성됨
+- 커버리지 리포트 위치: `build/reports/jacoco/test/html/index.html`
+- 주요 서비스/비즈니스 로직 커버리지: 80~100% (Redmine/Monitoring/TransactionAnalysis 등)
 
+---
 
 ## 📝 로그 표준화 및 트래킹ID(MDC) 활용
 
