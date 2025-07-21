@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import com.picpal.framework.redmine.exception.RedmineException;
+import com.picpal.framework.redmine.config.RedmineConfig;
 
 @Slf4j
 @Service
@@ -24,46 +25,30 @@ public class RedmineServiceImpl implements RedmineService {
 
     private final RestTemplate restTemplate;
     private final MonitoringResultRepository monitoringResultRepository;
-
-    @Value("${redmine.api.url}")
-    private String redmineApiUrl;
-
-    @Value("${redmine.api.key}")
-    private String redmineApiKey;
-
-    @Value("${redmine.project.id}")
-    private Integer projectId;
-
-    @Value("${redmine.tracker.id}")
-    private Integer trackerId;
-
-    @Value("${redmine.priority.id}")
-
-    private Integer priorityId;
+    private final RedmineConfig redmineConfig;
 
     @Override
-    public Integer createIssue(RedmineIssueDTO issueDTO) {
+    public Integer createIssue(String projectKey, RedmineIssueDTO issueDTO) {
+        RedmineConfig.Project projectConfig = redmineConfig.getProjects().get(projectKey);
+        if (projectConfig == null) {
+            throw new RedmineException("Redmine 프로젝트 설정을 찾을 수 없습니다: " + projectKey);
+        }
+        RedmineConfig.Api apiConfig = redmineConfig.getApi();
         try {
             Map<String, Object> requestBody = new HashMap<>();
             Map<String, Object> issue = new HashMap<>();
-            
             issue.put("subject", issueDTO.getSubject());
             issue.put("description", issueDTO.getDescription());
-            issue.put("project_id", issueDTO.getProjectId() != null ? issueDTO.getProjectId() : projectId);
-            issue.put("tracker_id", issueDTO.getTrackerId() != null ? issueDTO.getTrackerId() : trackerId);
-            issue.put("priority_id", issueDTO.getPriorityId() != null ? issueDTO.getPriorityId() : priorityId);
-            
+            issue.put("project_id", issueDTO.getProjectId() != null ? issueDTO.getProjectId() : projectConfig.getId());
+            issue.put("tracker_id", issueDTO.getTrackerId() != null ? issueDTO.getTrackerId() : projectConfig.getTrackerId());
+            issue.put("priority_id", issueDTO.getPriorityId() != null ? issueDTO.getPriorityId() : projectConfig.getPriorityId());
             requestBody.put("issue", issue);
-
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("X-Redmine-API-Key", redmineApiKey);
-
+            headers.set("X-Redmine-API-Key", apiConfig.getKey());
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-            
-            String url = redmineApiUrl + "/issues.json";
+            String url = apiConfig.getUrl() + "/issues.json";
             ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
-            
             if (response.getStatusCode() == HttpStatus.CREATED && response.getBody() != null) {
                 Map<String, Object> issueResponse = (Map<String, Object>) response.getBody().get("issue");
                 Integer issueId = (Integer) issueResponse.get("id");
@@ -73,7 +58,6 @@ public class RedmineServiceImpl implements RedmineService {
                 log.error("Redmine 이슈 생성 실패: {}", response.getStatusCode());
                 throw new RedmineException("Redmine 이슈 생성 실패: " + response.getStatusCode());
             }
-            
         } catch (HttpClientErrorException e) {
             log.error("Redmine API 호출 실패: {}", e.getMessage());
             throw new RedmineException("Redmine API 호출 실패", e);
@@ -84,35 +68,35 @@ public class RedmineServiceImpl implements RedmineService {
     }
 
     @Override
-    public Integer createMonitoringIssue(Long monitoringResultId) {
+    public Integer createMonitoringIssue(String projectKey, Long monitoringResultId) {
         Optional<MonitoringResult> resultOpt = monitoringResultRepository.findById(monitoringResultId);
-        
         if (resultOpt.isEmpty()) {
             log.error("모니터링 결과를 찾을 수 없습니다: {}", monitoringResultId);
             return null;
         }
-
         MonitoringResult result = resultOpt.get();
-        
+        RedmineConfig.Project projectConfig = redmineConfig.getProjects().get(projectKey);
+        if (projectConfig == null) {
+            throw new RedmineException("Redmine 프로젝트 설정을 찾을 수 없습니다: " + projectKey);
+        }
         RedmineIssueDTO issueDTO = RedmineIssueDTO.builder()
                 .subject("모니터링 알림: " + result.getAnalysisPeriod())
                 .description(buildIssueDescription(result))
-                .projectId(projectId)
-                .trackerId(trackerId)
-                .priorityId(priorityId)
+                .projectId(projectConfig.getId())
+                .trackerId(projectConfig.getTrackerId())
+                .priorityId(projectConfig.getPriorityId())
                 .build();
-
-        return createIssue(issueDTO);
+        return createIssue(projectKey, issueDTO);
     }
 
     @Override
     public boolean testConnection() {
         try {
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-Redmine-API-Key", redmineApiKey);
+            headers.set("X-Redmine-API-Key", redmineConfig.getApi().getKey());
             
             HttpEntity<String> request = new HttpEntity<>(headers);
-            String url = redmineApiUrl + "/projects.json";
+            String url = redmineConfig.getApi().getUrl() + "/projects.json";
             
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, request, Map.class);
             

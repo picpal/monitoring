@@ -69,3 +69,17 @@ springdoc:
   swagger-ui:
     url: /docs/open-api-3.0.1.json
     path: /docs/swagger
+
+redmine:
+  api:
+    url: http://redmine.example.com
+    key: your-api-key
+  projects:
+    projectA:
+      id: 1
+      trackerId: 2
+      priorityId: 3
+    projectB:
+      id: 2
+      trackerId: 2
+      priorityId: 4

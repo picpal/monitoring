@@ -8,10 +8,10 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.picpal.framework"})
 @MapperScan("com.picpal.framework.monitoring.repository.mapper")
-public class BoilerplateApplication {
+public class MonitoringApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(BoilerplateApplication.class, args);
+		SpringApplication.run(MonitoringApplication.class, args);
 	}
 
 }

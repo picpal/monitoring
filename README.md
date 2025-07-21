@@ -45,7 +45,7 @@ src/
 ├── main/
 │   ├── java/
 │   │   └── com/picpal/framework/
-│   │       ├── BoilerplateApplication.java
+│   │       ├── MonitoringApplication.java
 │   │       ├── common/
 │   │       │   ├── config/
 │   │       │   │   ├── JasyptConfig.java

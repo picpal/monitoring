@@ -78,7 +78,7 @@ class MonitoringServiceTest {
                 .thenReturn("<html>Sample Report</html>");
         when(monitoringResultRepository.save(any(MonitoringResult.class)))
                 .thenReturn(sampleMonitoringResult);
-        when(redmineService.createMonitoringIssue(anyLong()))
+        when(redmineService.createMonitoringIssue(anyString(), anyLong()))
                 .thenReturn(12345);
 
         // When
@@ -95,7 +95,7 @@ class MonitoringServiceTest {
         verify(transactionAnalysisService, times(1)).analyzeTransactions(any(), any(), eq(analysisPeriod));
         verify(templateGenerator, times(1)).generateTransactionReportHtml(sampleAnalysisVO);
         verify(monitoringResultRepository, times(1)).save(any(MonitoringResult.class));
-        verify(redmineService, times(1)).createMonitoringIssue(anyLong());
+        verify(redmineService, times(1)).createMonitoringIssue(anyString(), anyLong());
     }
 
     @Test
@@ -183,5 +183,129 @@ class MonitoringServiceTest {
         assertEquals("09:00", result.getAnalysisPeriod()); // 저장된 결과 반환
 
         verify(monitoringResultRepository, times(1)).save(any(MonitoringResult.class));
+    }
+
+    @Test
+    @DisplayName("거래 데이터 분석 중 예외 발생 시")
+    void testExecuteMonitoring_AnalyzeException() {
+        String analysisPeriod = "09:00";
+        when(transactionAnalysisService.analyzeTransactions(any(), any(), eq(analysisPeriod)))
+                .thenThrow(new RuntimeException("분석 오류"));
+        assertThrows(Exception.class, () -> monitoringService.executeMonitoring(analysisPeriod));
+    }
+
+    @Test
+    @DisplayName("HTML 생성 중 예외 발생 시")
+    void testExecuteMonitoring_HtmlException() {
+        String analysisPeriod = "09:00";
+        when(transactionAnalysisService.analyzeTransactions(any(), any(), eq(analysisPeriod)))
+                .thenReturn(sampleAnalysisVO);
+        when(templateGenerator.generateTransactionReportHtml(any()))
+                .thenThrow(new RuntimeException("HTML 오류"));
+        assertThrows(Exception.class, () -> monitoringService.executeMonitoring(analysisPeriod));
+    }
+
+    @Test
+    @DisplayName("결과 저장 중 예외 발생 시")
+    void testExecuteMonitoring_SaveException() {
+        String analysisPeriod = "09:00";
+        when(transactionAnalysisService.analyzeTransactions(any(), any(), eq(analysisPeriod)))
+                .thenReturn(sampleAnalysisVO);
+        when(templateGenerator.generateTransactionReportHtml(any()))
+                .thenReturn("<html>Sample Report</html>");
+        when(monitoringResultRepository.save(any(MonitoringResult.class)))
+                .thenThrow(new RuntimeException("저장 오류"));
+        assertThrows(Exception.class, () -> monitoringService.executeMonitoring(analysisPeriod));
+    }
+
+    @Test
+    @DisplayName("Redmine 이슈 생성 중 예외 발생 시")
+    void testExecuteMonitoring_RedmineException() {
+        String analysisPeriod = "09:00";
+        when(transactionAnalysisService.analyzeTransactions(any(), any(), eq(analysisPeriod)))
+                .thenReturn(sampleAnalysisVO);
+        when(templateGenerator.generateTransactionReportHtml(any()))
+                .thenReturn("<html>Sample Report</html>");
+        when(monitoringResultRepository.save(any(MonitoringResult.class)))
+                .thenReturn(sampleMonitoringResult);
+        when(redmineService.createMonitoringIssue(anyString(), anyLong()))
+                .thenThrow(new RuntimeException("Redmine 오류"));
+        MonitoringResultDTO result = monitoringService.executeMonitoring(analysisPeriod);
+        assertNull(result.getRedmineIssueId());
+    }
+
+    @Test
+    @DisplayName("이상 거래가 없는 경우 Redmine 이슈 생성 안함")
+    void testExecuteMonitoring_NoAbnormal() {
+        String analysisPeriod = "09:00";
+        TransactionAnalysisVO vo = new TransactionAnalysisVO();
+        vo.setTotalTransactions(100);
+        vo.setTotalAmount(new BigDecimal("10000"));
+        vo.setFraudCount(0);
+        vo.setHighRiskCount(0);
+        MonitoringResult noAbnormalResult = MonitoringResult.builder()
+                .monitoringDate(LocalDateTime.now())
+                .analysisPeriod(analysisPeriod)
+                .totalTransactions(100)
+                .totalAmount(new BigDecimal("10000"))
+                .abnormalCount(0)
+                .htmlContent("<html>Sample Report</html>")
+                .status(MonitoringStatus.COMPLETED)
+                .build();
+        noAbnormalResult.setId(2L);
+        when(transactionAnalysisService.analyzeTransactions(any(), any(), eq(analysisPeriod)))
+                .thenReturn(vo);
+        when(templateGenerator.generateTransactionReportHtml(any()))
+                .thenReturn("<html>Sample Report</html>");
+        when(monitoringResultRepository.save(any(MonitoringResult.class)))
+                .thenReturn(noAbnormalResult);
+        MonitoringResultDTO result = monitoringService.executeMonitoring(analysisPeriod);
+        assertNull(result.getRedmineIssueId());
+        verify(redmineService, never()).createMonitoringIssue(anyString(), anyLong());
+    }
+
+    @Test
+    @DisplayName("getLatestMonitoringResult 정상 동작")
+    void testGetLatestMonitoringResult() {
+        MonitoringResultDTO result = monitoringService.getLatestMonitoringResult("09:00");
+        assertNotNull(result);
+        assertEquals("09:00", result.getAnalysisPeriod());
+        assertEquals(MonitoringStatus.COMPLETED, result.getStatus());
+        assertEquals(0, result.getTotalTransactions());
+    }
+
+    @Test
+    @DisplayName("updateRedmineIssueId 정상 동작")
+    void testUpdateRedmineIssueId() {
+        MonitoringResult result = MonitoringResult.builder()
+                .monitoringDate(LocalDateTime.now())
+                .analysisPeriod("09:00")
+                .totalTransactions(100)
+                .totalAmount(new BigDecimal("10000"))
+                .abnormalCount(1)
+                .htmlContent("<html>Sample Report</html>")
+                .status(MonitoringStatus.COMPLETED)
+                .build();
+        result.setId(3L);
+        when(monitoringResultRepository.findById(3L)).thenReturn(Optional.of(result));
+        when(monitoringResultRepository.save(any(MonitoringResult.class))).thenReturn(result);
+        // private method라서 reflection으로 호출
+        assertDoesNotThrow(() -> {
+            java.lang.reflect.Method m = MonitoringServiceImpl.class.getDeclaredMethod("updateRedmineIssueId", Long.class, String.class);
+            m.setAccessible(true);
+            m.invoke(monitoringService, 3L, "RID-123");
+        });
+        assertEquals("RID-123", result.getRedmineIssueId());
+    }
+
+    @Test
+    @DisplayName("updateRedmineIssueId - 결과 없음")
+    void testUpdateRedmineIssueId_NotFound() {
+        when(monitoringResultRepository.findById(4L)).thenReturn(Optional.empty());
+        assertDoesNotThrow(() -> {
+            java.lang.reflect.Method m = MonitoringServiceImpl.class.getDeclaredMethod("updateRedmineIssueId", Long.class, String.class);
+            m.setAccessible(true);
+            m.invoke(monitoringService, 4L, "RID-999");
+        });
     }
 } 

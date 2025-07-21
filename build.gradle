@@ -14,6 +14,7 @@ plugins {
 	id 'org.asciidoctor.jvm.convert' version '3.3.1'
 	id 'com.epages.restdocs-api-spec' version "${restdocsApiSpecVersion}"
 	id 'org.hidetake.swagger.generator' version '2.18.2'
+	id 'jacoco'
 }
 
 group = 'com.picpal'
@@ -144,10 +145,10 @@ bootJar{
 
 openapi3{
 	server = "http://localhost:8080"
-	title = "Boilerplate DOCS"
-	description = "Boilerplate REST API TEST DOCS"
+	title = "monitoring DOCS"
+	description = "monitoring REST API TEST DOCS"
 	version = "0.0.1"
-	outputFileNamePrefix = 'boilerplate-1.0.0'
+	outputFileNamePrefix = 'monitoring-1.0.0'
 	format = 'json'
 	outputDirectory = 'build/resources/main/static/docs'
 }
@@ -161,6 +162,28 @@ asciidoctor {
 
 asciidoctor.doFirst{
 	delete file('src/main/resources/static/docs')
+}
+
+jacocoTestReport {
+    afterEvaluate {
+        classDirectories.setFrom(
+            files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: [
+                    '**/dto/**',
+                    '**/vo/**',
+                    '**/model/**',
+                    '**/config/**',
+                    '**/exception/**',
+                    '**/controller/**',
+					'**/enums/**'
+                ])
+            })
+        )
+    }
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }
 
 

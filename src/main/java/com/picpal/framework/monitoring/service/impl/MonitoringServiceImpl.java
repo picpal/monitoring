@@ -83,7 +83,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         // 5. Redmine 이슈 생성 (이상 거래가 있는 경우)
         if (savedResult.getAbnormalCount() > 0 && savedResult.getStatus() == MonitoringStatus.COMPLETED) {
             try {
-                Integer redmineIssueId = redmineService.createMonitoringIssue(savedResult.getId());
+                Integer redmineIssueId = redmineService.createMonitoringIssue("projectA", savedResult.getId());
                 if (redmineIssueId != null) {
                     savedResult.setRedmineIssueId(redmineIssueId.toString());
                     // Redmine 이슈 ID 업데이트

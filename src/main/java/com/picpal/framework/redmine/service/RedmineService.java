@@ -8,14 +8,14 @@ public interface RedmineService {
      * @param issueDTO 이슈 정보
      * @return 생성된 이슈 ID
      */
-    Integer createIssue(RedmineIssueDTO issueDTO);
+    Integer createIssue(String projectKey, RedmineIssueDTO issueDTO);
     
     /**
      * 모니터링 결과를 기반으로 Redmine 이슈를 생성합니다.
      * @param monitoringResultId 모니터링 결과 ID
      * @return 생성된 이슈 ID
      */
-    Integer createMonitoringIssue(Long monitoringResultId);
+    Integer createMonitoringIssue(String projectKey, Long monitoringResultId);
     
     /**
      * Redmine 연결 상태를 확인합니다.

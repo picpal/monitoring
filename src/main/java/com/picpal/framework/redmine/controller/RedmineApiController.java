@@ -1,4 +1,4 @@
-package com.picpal.framework.redmine;
+package com.picpal.framework.redmine.controller;
 
 import com.picpal.framework.redmine.dto.RedmineIssueDTO;
 import com.picpal.framework.redmine.service.RedmineService;
@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,11 +20,11 @@ import java.util.Map;
 public class RedmineApiController {
     private final RedmineService redmineService;
 
-    @PostMapping("/issue")
+    @PostMapping("/issue/{projectKey}")
     @Operation(summary = "Redmine 이슈 등록", description = "Redmine에 이슈를 등록합니다.")
-    public ResponseEntity<Map<String, Object>> createRedmineIssue(@RequestBody RedmineIssueDTO issueDTO) {
-        log.info("Redmine 이슈 등록 요청: {}", issueDTO);
-        Integer issueId = redmineService.createIssue(issueDTO);
+    public ResponseEntity<Map<String, Object>> createRedmineIssue(@PathVariable String projectKey, @RequestBody RedmineIssueDTO issueDTO) {
+        log.info("Redmine 이슈 등록 요청: {} (projectKey: {})", issueDTO, projectKey);
+        Integer issueId = redmineService.createIssue(projectKey, issueDTO);
         Map<String, Object> result = new HashMap<>();
         result.put("issueId", issueId);
         return ResponseEntity.ok(result);
