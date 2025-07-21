@@ -289,37 +289,6 @@ API 문서 자동 생성을 위한 REST Docs 테스트가 포함되어 있습니
 - **설정**: `@AutoConfigureRestDocs` 어노테이션으로 REST Docs 자동 설정
 - **사용법**: 테스트 실행 시 API 문서 스니펫이 자동 생성됨
 
-## 🔄 최근 업데이트
-
-### Spring Boot 3.2.2 호환성 개선
-- MyBatis Spring Boot Starter 3.0.3으로 업그레이드
-- JSoup 1.17.2로 업데이트
-- JUnit Jupiter 의존성 정리
-- javax.servlet-api 의존성 제거 (Spring Boot 3.x는 Jakarta EE 사용)
-
-### MyBatis 설정 개선
-- XML 매퍼 파일에 올바른 DOCTYPE 선언 추가
-- H2 데이터베이스와 호환되는 JPA 쿼리로 수정
-
-### Spring Security 설정 개선
-- 인증 없이 접근 가능한 경로들을 변수로 관리
-- 모니터링 페이지 접근 허용
-
-### Thymeleaf 템플릿 추가
-- 모니터링 리포트 뷰 템플릿 추가
-- CSS와 HTML 분리
-
-## 📦 배포
-
-### JAR 파일 생성
-```bash
-./gradlew bootJar
-```
-
-### 실행
-```bash
-java -Djasypt.enc.pre=0000 -Djasypt.enc.post=1111 -jar build/libs/monitoring-0.0.1-SNAPSHOT.jar
-``` 
 
 ## 📝 로그 표준화 및 트래킹ID(MDC) 활용
 
