@@ -1,6 +1,6 @@
-package com.picpal.framework.monitoring.service;
+package com.picpal.framework.redmine.service;
 
-import com.picpal.framework.monitoring.dto.RedmineIssueDTO;
+import com.picpal.framework.redmine.dto.RedmineIssueDTO;
 
 public interface RedmineService {
     /**

@@ -1,0 +1,16 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "Boilerplate DOCS",
+    "description" : "Boilerplate REST API TEST DOCS",
+    "version" : "0.0.1"
+  },
+  "servers" : [ {
+    "url" : "http://localhost:8080"
+  } ],
+  "tags" : [ ],
+  "paths" : { },
+  "components" : {
+    "schemas" : { }
+  }
+}

@@ -7,7 +7,7 @@ import com.picpal.framework.monitoring.repository.MonitoringResultRepository;
 import com.picpal.framework.monitoring.repository.model.MonitoringResult;
 import com.picpal.framework.monitoring.service.MonitoringService;
 import com.picpal.framework.monitoring.service.TransactionAnalysisService;
-import com.picpal.framework.monitoring.service.RedmineService;
+import com.picpal.framework.redmine.service.RedmineService;
 import com.picpal.framework.monitoring.vo.TransactionAnalysisVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import com.picpal.framework.monitoring.exception.MonitoringException;
 
 @Slf4j
 @Service
@@ -67,12 +68,17 @@ public class MonitoringServiceImpl implements MonitoringService {
             
         } catch (Exception e) {
             log.error("모니터링 실행 중 오류 발생", e);
-            resultDTO.setStatus(MonitoringStatus.FAILED);
-            resultDTO.setErrorMessage(e.getMessage());
+            throw new MonitoringException("모니터링 실행 중 오류 발생", e);
         }
         
         // 4. 결과 저장
-        MonitoringResultDTO savedResult = saveMonitoringResult(resultDTO);
+        MonitoringResultDTO savedResult;
+        try {
+            savedResult = saveMonitoringResult(resultDTO);
+        } catch (Exception e) {
+            log.error("모니터링 결과 저장 실패", e);
+            throw new MonitoringException("모니터링 결과 저장 실패", e);
+        }
         
         // 5. Redmine 이슈 생성 (이상 거래가 있는 경우)
         if (savedResult.getAbnormalCount() > 0 && savedResult.getStatus() == MonitoringStatus.COMPLETED) {
@@ -86,6 +92,7 @@ public class MonitoringServiceImpl implements MonitoringService {
                 }
             } catch (Exception e) {
                 log.error("Redmine 이슈 생성 실패", e);
+                // Redmine 연동 실패는 모니터링 자체 실패로 간주하지 않고, 로그만 남김
             }
         }
         

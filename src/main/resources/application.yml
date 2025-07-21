@@ -69,17 +69,3 @@ springdoc:
   swagger-ui:
     url: /docs/open-api-3.0.1.json
     path: /docs/swagger
-
-########################################################
-# ************ Redmine Configuration ***********
-########################################################
-redmine:
-  api:
-    url: http://localhost:3000
-    key: test_api_key_here
-  project:
-    id: 1
-  tracker:
-    id: 1
-  priority:
-    id: 2

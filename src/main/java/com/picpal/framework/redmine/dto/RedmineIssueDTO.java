@@ -1,4 +1,4 @@
-package com.picpal.framework.monitoring.dto;
+package com.picpal.framework.redmine.dto;
 
 import lombok.Data;
 import lombok.Builder;

@@ -1,10 +1,10 @@
-package com.picpal.framework.monitoring.service;
+package com.picpal.framework.redmine;
 
-import com.picpal.framework.monitoring.dto.RedmineIssueDTO;
+import com.picpal.framework.redmine.dto.RedmineIssueDTO;
 import com.picpal.framework.monitoring.repository.MonitoringResultRepository;
 import com.picpal.framework.monitoring.repository.model.MonitoringResult;
 import com.picpal.framework.common.enums.MonitoringStatus;
-import com.picpal.framework.monitoring.service.impl.RedmineServiceImpl;
+import com.picpal.framework.redmine.service.impl.RedmineServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,7 +1,7 @@
-package com.picpal.framework.monitoring.service.impl;
+package com.picpal.framework.redmine.service.impl;
 
-import com.picpal.framework.monitoring.dto.RedmineIssueDTO;
-import com.picpal.framework.monitoring.service.RedmineService;
+import com.picpal.framework.redmine.dto.RedmineIssueDTO;
+import com.picpal.framework.redmine.service.RedmineService;
 import com.picpal.framework.monitoring.repository.MonitoringResultRepository;
 import com.picpal.framework.monitoring.repository.model.MonitoringResult;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +15,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import com.picpal.framework.redmine.exception.RedmineException;
 
 @Slf4j
 @Service
@@ -37,6 +38,7 @@ public class RedmineServiceImpl implements RedmineService {
     private Integer trackerId;
 
     @Value("${redmine.priority.id}")
+
     private Integer priorityId;
 
     @Override
@@ -69,15 +71,15 @@ public class RedmineServiceImpl implements RedmineService {
                 return issueId;
             } else {
                 log.error("Redmine 이슈 생성 실패: {}", response.getStatusCode());
-                return null;
+                throw new RedmineException("Redmine 이슈 생성 실패: " + response.getStatusCode());
             }
             
         } catch (HttpClientErrorException e) {
             log.error("Redmine API 호출 실패: {}", e.getMessage());
-            return null;
+            throw new RedmineException("Redmine API 호출 실패", e);
         } catch (Exception e) {
             log.error("Redmine 이슈 생성 중 예외 발생", e);
-            return null;
+            throw new RedmineException("Redmine 이슈 생성 중 예외 발생", e);
         }
     }
 
@@ -120,7 +122,7 @@ public class RedmineServiceImpl implements RedmineService {
             
         } catch (Exception e) {
             log.error("Redmine 연결 테스트 실패", e);
-            return false;
+            throw new RedmineException("Redmine 연결 테스트 실패", e);
         }
     }
 

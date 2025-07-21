@@ -36,13 +36,8 @@ public class MonitoringApiController {
         
         log.info("모니터링 실행 요청: {}", analysisPeriod);
         
-        try {
-            MonitoringResultDTO result = monitoringService.executeMonitoring(analysisPeriod);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            log.error("모니터링 실행 중 오류 발생", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        MonitoringResultDTO result = monitoringService.executeMonitoring(analysisPeriod);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/execute/period")
@@ -57,13 +52,8 @@ public class MonitoringApiController {
         
         log.info("특정 기간 모니터링 실행 요청: {} ~ {}, 분석 기간: {}", startDate, endDate, analysisPeriod);
         
-        try {
-            MonitoringResultDTO result = monitoringService.executeMonitoring(startDate, endDate, analysisPeriod);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            log.error("특정 기간 모니터링 실행 중 오류 발생", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        MonitoringResultDTO result = monitoringService.executeMonitoring(startDate, endDate, analysisPeriod);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/status")

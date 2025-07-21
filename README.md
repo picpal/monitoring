@@ -320,3 +320,48 @@ API 문서 자동 생성을 위한 REST Docs 테스트가 포함되어 있습니
 ```bash
 java -Djasypt.enc.pre=0000 -Djasypt.enc.post=1111 -jar build/libs/monitoring-0.0.1-SNAPSHOT.jar
 ``` 
+
+## 📝 로그 표준화 및 트래킹ID(MDC) 활용
+
+### 로그 포맷 표준화 (logback.xml)
+
+```xml
+<pattern>
+    [%X{requestId}] [%-5level] [%thread] [%date{yyyy-MM-dd HH:mm:ss}] %logger{96} [%line] - %msg%n
+</pattern>
+```
+- 모든 로그에 requestId(트래킹ID)가 포함되어 장애 추적이 용이합니다.
+
+### MDC(requestId) 자동 주입
+
+`com.picpal.framework.common.config.MDCFilter`에서 모든 요청마다 UUID 기반 requestId를 MDC에 주입합니다.
+
+```java
+@Component
+public class MDCFilter implements Filter {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        String requestId = UUID.randomUUID().toString();
+        MDC.put("requestId", requestId);
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            MDC.remove("requestId");
+        }
+    }
+}
+```
+
+### VOC 대응 및 로그 추적 방법
+
+- 장애/오류 발생 시, 로그에서 `[requestId]`로 검색하면 해당 요청의 전체 흐름을 추적할 수 있습니다.
+- 에러 응답에도 requestId(트래킹ID)를 포함하면, 고객 문의 시 빠른 추적이 가능합니다.
+- 로그 집계 시스템(ELK, Sentry 등)과 연동 시, requestId로 장애 패턴 분석 및 알람 설정이 가능합니다.
+- 예외 발생 시 로그 예시:
+
+```
+[1a2b3c4d-...] [ERROR] [http-nio-8080-exec-1] [2024-05-01 12:34:56] com.picpal.framework.monitoring.service.impl.MonitoringServiceImpl [123] - 모니터링 실행 중 오류 발생
+com.picpal.framework.monitoring.exception.MonitoringException: 모니터링 실행 중 오류 발생
+    at ...
+```
+
+- 운영자는 requestId, 에러 코드, 메시지, stack trace를 종합해 장애 원인과 위치를 빠르게 파악할 수 있습니다. 
