@@ -1,0 +1,220 @@
+{
+	"info": {
+		"_postman_id": "monitoring-api-collection",
+		"name": "Monitoring System API",
+		"description": "모니터링 시스템 API 테스트 컬렉션",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "monitoring-system"
+	},
+	"item": [
+		{
+			"name": "Monitoring API",
+			"item": [
+				{
+					"name": "모니터링 실행",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/monitoring/execute?analysisPeriod=09:00",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"monitoring",
+								"execute"
+							],
+							"query": [
+								{
+									"key": "analysisPeriod",
+									"value": "09:00",
+									"description": "분석 기간 (09:00, 13:00, 18:00)"
+								}
+							]
+						},
+						"description": "지정된 분석 기간으로 모니터링을 실행합니다."
+					},
+					"response": []
+				},
+				{
+					"name": "특정 기간 모니터링 실행",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/monitoring/execute/period?startDate=2024-01-15T09:00:00&endDate=2024-01-15T18:00:00&analysisPeriod=09:00",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"monitoring",
+								"execute",
+								"period"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-15T09:00:00",
+									"description": "시작 시간 (ISO DateTime 형식)"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-01-15T18:00:00",
+									"description": "종료 시간 (ISO DateTime 형식)"
+								},
+								{
+									"key": "analysisPeriod",
+									"value": "09:00",
+									"description": "분석 기간"
+								}
+							]
+						},
+						"description": "지정된 기간과 분석 기간으로 모니터링을 실행합니다."
+					},
+					"response": []
+				},
+				{
+					"name": "모니터링 상태 확인",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/monitoring/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"monitoring",
+								"status"
+							]
+						},
+						"description": "사용 가능한 분석 기간과 마지막 실행 시간을 확인합니다."
+					},
+					"response": []
+				}
+			],
+			"description": "모니터링 실행 및 결과 조회 API"
+		},
+		{
+			"name": "Redmine API",
+			"item": [
+				{
+					"name": "Redmine 이슈 등록",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"subject\": \"모니터링 이상 감지 - 거래량 급증\",\n  \"description\": \"오늘 09:00 분석 결과 거래량이 평균 대비 150% 증가했습니다.\",\n  \"priority\": \"HIGH\",\n  \"trackerId\": 1,\n  \"statusId\": 1,\n  \"assignedToId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/redmine/issue/{{projectKey}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"redmine",
+								"issue",
+								"{{projectKey}}"
+							]
+						},
+						"description": "Redmine에 이슈를 등록합니다."
+					},
+					"response": []
+				}
+			],
+			"description": "Redmine 이슈 연동 API"
+		},
+		{
+			"name": "View Pages",
+			"item": [
+				{
+					"name": "모니터링 리포트 뷰",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/monitoring/report",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"monitoring",
+								"report"
+							]
+						},
+						"description": "Thymeleaf 템플릿을 사용한 모니터링 리포트 뷰를 확인할 수 있습니다."
+					},
+					"response": []
+				}
+			],
+			"description": "웹 페이지 뷰"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "projectKey",
+			"value": "MONITORING",
+			"type": "string",
+			"description": "Redmine 프로젝트 키"
+		}
+	]
+}
