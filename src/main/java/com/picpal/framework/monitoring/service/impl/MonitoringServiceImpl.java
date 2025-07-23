@@ -7,6 +7,7 @@ import com.picpal.framework.monitoring.repository.MonitoringResultRepository;
 import com.picpal.framework.monitoring.repository.model.MonitoringResult;
 import com.picpal.framework.monitoring.service.MonitoringService;
 import com.picpal.framework.monitoring.service.TransactionAnalysisService;
+import com.picpal.framework.redmine.dto.RedmineIssueDTO;
 import com.picpal.framework.redmine.service.RedmineService;
 import com.picpal.framework.monitoring.vo.TransactionAnalysisVO;
 import lombok.RequiredArgsConstructor;
@@ -83,13 +84,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         // 5. Redmine 이슈 생성 (이상 거래가 있는 경우)
         if (savedResult.getAbnormalCount() > 0 && savedResult.getStatus() == MonitoringStatus.COMPLETED) {
             try {
-                Integer redmineIssueId = redmineService.createMonitoringIssue("projectA", savedResult.getId());
-                if (redmineIssueId != null) {
-                    savedResult.setRedmineIssueId(redmineIssueId.toString());
-                    // Redmine 이슈 ID 업데이트
-                    updateRedmineIssueId(savedResult.getId(), redmineIssueId.toString());
-                    log.info("Redmine 이슈 생성 완료: {}", redmineIssueId);
-                }
+                createRedmineIssue("projectA", savedResult);
             } catch (Exception e) {
                 log.error("Redmine 이슈 생성 실패", e);
                 // Redmine 연동 실패는 모니터링 자체 실패로 간주하지 않고, 로그만 남김
@@ -97,6 +92,40 @@ public class MonitoringServiceImpl implements MonitoringService {
         }
         
         return savedResult;
+    }
+
+    private void createRedmineIssue(String projectKey, MonitoringResultDTO result) {
+        RedmineIssueDTO issueDTO = RedmineIssueDTO.builder()
+                .subject("모니터링 알림: " + result.getAnalysisPeriod())
+                .description(buildIssueDescription(result))
+                .build();
+        Integer redmineIssueId = redmineService.createIssue(projectKey, issueDTO);
+        if (redmineIssueId != null) {
+            result.setRedmineIssueId(redmineIssueId.toString());
+            updateRedmineIssueId(result.getId(), redmineIssueId.toString());
+            log.info("Redmine 이슈 생성 완료: {}", redmineIssueId);
+        }
+    }
+
+    private String buildIssueDescription(MonitoringResultDTO result) {
+        StringBuilder description = new StringBuilder();
+        description.append("**모니터링 결과 상세**\n\n");
+        description.append("**분석 기간:** ").append(result.getAnalysisPeriod()).append("\n");
+        description.append("**모니터링 날짜:** ").append(result.getMonitoringDate()).append("\n");
+        description.append("**상태:** ").append(result.getStatus()).append("\n");
+        description.append("**총 거래 수:** ").append(result.getTotalTransactions()).append("\n");
+        description.append("**총 금액:** ").append(result.getTotalAmount()).append("\n");
+        description.append("**이상 거래 수:** ").append(result.getAbnormalCount()).append("\n");
+
+        if (result.getErrorMessage() != null && !result.getErrorMessage().isEmpty()) {
+            description.append("\n**오류 메시지:**\n").append(result.getErrorMessage());
+        }
+
+        if (result.getHtmlContent() != null && !result.getHtmlContent().isEmpty()) {
+            description.append("\n\n**HTML 리포트:**\n").append(result.getHtmlContent());
+        }
+
+        return description.toString();
     }
 
     /**

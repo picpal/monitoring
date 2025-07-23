@@ -7,6 +7,7 @@ import com.picpal.framework.monitoring.repository.model.MonitoringResult;
 import com.picpal.framework.monitoring.service.impl.MonitoringServiceImpl;
 import com.picpal.framework.monitoring.vo.TransactionAnalysisVO;
 import com.picpal.framework.common.utils.ThymeleafTemplateGenerator;
+import com.picpal.framework.redmine.dto.RedmineIssueDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -78,7 +79,7 @@ class MonitoringServiceTest {
                 .thenReturn("<html>Sample Report</html>");
         when(monitoringResultRepository.save(any(MonitoringResult.class)))
                 .thenReturn(sampleMonitoringResult);
-        when(redmineService.createMonitoringIssue(anyString(), anyLong()))
+        when(redmineService.createIssue(anyString(), any(RedmineIssueDTO.class)))
                 .thenReturn(12345);
 
         // When
@@ -95,7 +96,7 @@ class MonitoringServiceTest {
         verify(transactionAnalysisService, times(1)).analyzeTransactions(any(), any(), eq(analysisPeriod));
         verify(templateGenerator, times(1)).generateTransactionReportHtml(sampleAnalysisVO);
         verify(monitoringResultRepository, times(1)).save(any(MonitoringResult.class));
-        verify(redmineService, times(1)).createMonitoringIssue(anyString(), anyLong());
+        verify(redmineService, times(1)).createIssue(anyString(), any(RedmineIssueDTO.class));
     }
 
     @Test
@@ -228,7 +229,7 @@ class MonitoringServiceTest {
                 .thenReturn("<html>Sample Report</html>");
         when(monitoringResultRepository.save(any(MonitoringResult.class)))
                 .thenReturn(sampleMonitoringResult);
-        when(redmineService.createMonitoringIssue(anyString(), anyLong()))
+        when(redmineService.createIssue(anyString(), any(RedmineIssueDTO.class)))
                 .thenThrow(new RuntimeException("Redmine 오류"));
         MonitoringResultDTO result = monitoringService.executeMonitoring(analysisPeriod);
         assertNull(result.getRedmineIssueId());
@@ -261,7 +262,7 @@ class MonitoringServiceTest {
                 .thenReturn(noAbnormalResult);
         MonitoringResultDTO result = monitoringService.executeMonitoring(analysisPeriod);
         assertNull(result.getRedmineIssueId());
-        verify(redmineService, never()).createMonitoringIssue(anyString(), anyLong());
+        verify(redmineService, never()).createIssue(anyString(), any(RedmineIssueDTO.class));
     }
 
     @Test

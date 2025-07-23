@@ -36,9 +36,6 @@ class RedmineServiceTest {
     private RestTemplate restTemplate;
 
     @Mock
-    private MonitoringResultRepository monitoringResultRepository;
-
-    @Mock
     private RedmineConfig redmineConfig;
 
     private RedmineServiceImpl redmineService;
@@ -46,9 +43,8 @@ class RedmineServiceTest {
     @BeforeEach
     void setUp() {
         restTemplate = mock(RestTemplate.class);
-        monitoringResultRepository = mock(MonitoringResultRepository.class);
         redmineConfig = mock(RedmineConfig.class);
-        redmineService = new RedmineServiceImpl(restTemplate, monitoringResultRepository, redmineConfig);
+        redmineService = new RedmineServiceImpl(restTemplate, redmineConfig);
 
         RedmineConfig.Api api = new RedmineConfig.Api();
         api.setUrl("http://localhost:3000");
@@ -89,65 +85,6 @@ class RedmineServiceTest {
         // Then
         assertNotNull(issueId, "이슈 ID가 생성되어야 합니다.");
         assertEquals(12345, issueId, "Mock 서버에서 반환하는 이슈 ID는 12345입니다.");
-    }
-
-    @Test
-    void testCreateMonitoringIssue() {
-        // Given
-        MonitoringResult result = MonitoringResult.builder()
-                .monitoringDate(LocalDateTime.now())
-                .analysisPeriod("09:00")
-                .totalTransactions(100)
-                .totalAmount(new BigDecimal("1000000"))
-                .abnormalCount(5)
-                .htmlContent("<html><body>테스트 리포트</body></html>")
-                .status(MonitoringStatus.COMPLETED)
-                .build();
-
-        Map<String, Object> responseBody = new HashMap<>();
-        Map<String, Object> issue = new HashMap<>();
-        issue.put("id", 12345);
-        responseBody.put("issue", issue);
-
-        when(monitoringResultRepository.findById(1L)).thenReturn(Optional.of(result));
-        when(restTemplate.postForEntity(anyString(), any(), eq(Map.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(responseBody));
-
-        // When
-        Integer issueId = redmineService.createMonitoringIssue("projectA", 1L);
-
-        // Then
-        assertNotNull(issueId, "모니터링 이슈 ID가 생성되어야 합니다.");
-        assertEquals(12345, issueId, "Mock 서버에서 반환하는 이슈 ID는 12345입니다.");
-    }
-
-    @Test
-    void testCreateMonitoringIssueWithError() {
-        // Given
-        MonitoringResult result = MonitoringResult.builder()
-                .monitoringDate(LocalDateTime.now())
-                .analysisPeriod("13:00")
-                .totalTransactions(50)
-                .totalAmount(new BigDecimal("500000"))
-                .abnormalCount(0)
-                .status(MonitoringStatus.FAILED)
-                .errorMessage("테스트 오류 메시지")
-                .build();
-
-        Map<String, Object> responseBody = new HashMap<>();
-        Map<String, Object> issue = new HashMap<>();
-        issue.put("id", 12345);
-        responseBody.put("issue", issue);
-
-        when(monitoringResultRepository.findById(1L)).thenReturn(Optional.of(result));
-        when(restTemplate.postForEntity(anyString(), any(), eq(Map.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(responseBody));
-
-        // When
-        Integer issueId = redmineService.createMonitoringIssue("projectA", 1L);
-
-        // Then
-        assertNotNull(issueId, "오류가 있는 모니터링 결과도 이슈가 생성되어야 합니다.");
     }
 
     @Test
@@ -252,22 +189,6 @@ class RedmineServiceTest {
     }
 
     @Test
-    void testCreateMonitoringIssue_ResultNotFound() {
-        when(monitoringResultRepository.findById(anyLong())).thenReturn(Optional.empty());
-        Integer issueId = redmineService.createMonitoringIssue("projectA", 999L);
-        assertNull(issueId);
-    }
-
-    @Test
-    void testCreateMonitoringIssue_ProjectConfigNotFound() {
-        MonitoringResult result = MonitoringResult.builder().monitoringDate(LocalDateTime.now()).build();
-        when(monitoringResultRepository.findById(anyLong())).thenReturn(Optional.of(result));
-        when(redmineConfig.getProjects()).thenReturn(new HashMap<>()); // empty
-        Exception ex = assertThrows(RuntimeException.class, () -> redmineService.createMonitoringIssue("notExistKey", 1L));
-        assertTrue(ex.getMessage().contains("Redmine 프로젝트 설정을 찾을 수 없습니다"));
-    }
-
-    @Test
     void testTestConnection_Success() {
         Map<String, Object> responseBody = new HashMap<>();
         ResponseEntity<Map> response = ResponseEntity.status(HttpStatus.OK).body(responseBody);
@@ -288,44 +209,6 @@ class RedmineServiceTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(Map.class))).thenThrow(new RuntimeException("연결 오류"));
         Exception ex = assertThrows(RuntimeException.class, () -> redmineService.testConnection());
         assertTrue(ex.getMessage().contains("Redmine 연결 테스트 실패"));
-    }
-
-    @Test
-    void testBuildIssueDescription_ErrorMessageAndHtml() throws Exception {
-        java.lang.reflect.Method m = RedmineServiceImpl.class.getDeclaredMethod("buildIssueDescription", MonitoringResult.class);
-        m.setAccessible(true);
-        MonitoringResult result = MonitoringResult.builder()
-                .monitoringDate(LocalDateTime.now())
-                .analysisPeriod("09:00")
-                .totalTransactions(10)
-                .totalAmount(new BigDecimal("10000"))
-                .abnormalCount(1)
-                .htmlContent("<html>HTML</html>")
-                .status(MonitoringStatus.COMPLETED)
-                .errorMessage("에러 발생!")
-                .build();
-        String desc = (String) m.invoke(redmineService, result);
-        assertTrue(desc.contains("에러 발생!"));
-        assertTrue(desc.contains("<html>HTML</html>"));
-    }
-
-    @Test
-    void testBuildIssueDescription_EmptyErrorAndHtml() throws Exception {
-        java.lang.reflect.Method m = RedmineServiceImpl.class.getDeclaredMethod("buildIssueDescription", MonitoringResult.class);
-        m.setAccessible(true);
-        MonitoringResult result = MonitoringResult.builder()
-                .monitoringDate(LocalDateTime.now())
-                .analysisPeriod("09:00")
-                .totalTransactions(10)
-                .totalAmount(new BigDecimal("10000"))
-                .abnormalCount(1)
-                .htmlContent("")
-                .status(MonitoringStatus.COMPLETED)
-                .errorMessage("")
-                .build();
-        String desc = (String) m.invoke(redmineService, result);
-        assertFalse(desc.contains("에러 발생!"));
-        assertFalse(desc.contains("HTML"));
     }
 
     @Test

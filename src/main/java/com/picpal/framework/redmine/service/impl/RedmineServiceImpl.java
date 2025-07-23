@@ -2,11 +2,8 @@ package com.picpal.framework.redmine.service.impl;
 
 import com.picpal.framework.redmine.dto.RedmineIssueDTO;
 import com.picpal.framework.redmine.service.RedmineService;
-import com.picpal.framework.monitoring.repository.MonitoringResultRepository;
-import com.picpal.framework.monitoring.repository.model.MonitoringResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -14,7 +11,6 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import com.picpal.framework.redmine.exception.RedmineException;
 import com.picpal.framework.redmine.config.RedmineConfig;
 
@@ -24,7 +20,6 @@ import com.picpal.framework.redmine.config.RedmineConfig;
 public class RedmineServiceImpl implements RedmineService {
 
     private final RestTemplate restTemplate;
-    private final MonitoringResultRepository monitoringResultRepository;
     private final RedmineConfig redmineConfig;
 
     @Override
@@ -68,28 +63,6 @@ public class RedmineServiceImpl implements RedmineService {
     }
 
     @Override
-    public Integer createMonitoringIssue(String projectKey, Long monitoringResultId) {
-        Optional<MonitoringResult> resultOpt = monitoringResultRepository.findById(monitoringResultId);
-        if (resultOpt.isEmpty()) {
-            log.error("모니터링 결과를 찾을 수 없습니다: {}", monitoringResultId);
-            return null;
-        }
-        MonitoringResult result = resultOpt.get();
-        RedmineConfig.Project projectConfig = redmineConfig.getProjects().get(projectKey);
-        if (projectConfig == null) {
-            throw new RedmineException("Redmine 프로젝트 설정을 찾을 수 없습니다: " + projectKey);
-        }
-        RedmineIssueDTO issueDTO = RedmineIssueDTO.builder()
-                .subject("모니터링 알림: " + result.getAnalysisPeriod())
-                .description(buildIssueDescription(result))
-                .projectId(projectConfig.getId())
-                .trackerId(projectConfig.getTrackerId())
-                .priorityId(projectConfig.getPriorityId())
-                .build();
-        return createIssue(projectKey, issueDTO);
-    }
-
-    @Override
     public boolean testConnection() {
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -108,26 +81,5 @@ public class RedmineServiceImpl implements RedmineService {
             log.error("Redmine 연결 테스트 실패", e);
             throw new RedmineException("Redmine 연결 테스트 실패", e);
         }
-    }
-
-    private String buildIssueDescription(MonitoringResult result) {
-        StringBuilder description = new StringBuilder();
-        description.append("**모니터링 결과 상세**\n\n");
-        description.append("**분석 기간:** ").append(result.getAnalysisPeriod()).append("\n");
-        description.append("**모니터링 날짜:** ").append(result.getMonitoringDate()).append("\n");
-        description.append("**상태:** ").append(result.getStatus()).append("\n");
-        description.append("**총 거래 수:** ").append(result.getTotalTransactions()).append("\n");
-        description.append("**총 금액:** ").append(result.getTotalAmount()).append("\n");
-        description.append("**이상 거래 수:** ").append(result.getAbnormalCount()).append("\n");
-        
-        if (result.getErrorMessage() != null && !result.getErrorMessage().isEmpty()) {
-            description.append("\n**오류 메시지:**\n").append(result.getErrorMessage());
-        }
-        
-        if (result.getHtmlContent() != null && !result.getHtmlContent().isEmpty()) {
-            description.append("\n\n**HTML 리포트:**\n").append(result.getHtmlContent());
-        }
-        
-        return description.toString();
     }
 } 
