@@ -20,10 +20,13 @@ import org.springframework.security.web.SecurityFilterChain;
 public class WebSecurityConfiguration  {
     private static final String[] WHITE_LIST = {"/h2-console/**"};
     private static final String[] PERMIT_ALL_PATHS = {
+        "/",               // 홈페이지
+        "/error",          // 오류 페이지
         "/monitoring/**",  // 모니터링 페이지
         "/actuator/**",    // Spring Boot Actuator
         "/swagger-ui/**",  // Swagger UI
-        "/v3/api-docs/**" // OpenAPI 문서
+        "/v3/api-docs/**", // OpenAPI 문서
+        "/css/**"          // CSS 정적 리소스 (실제 사용 중)
     };
 
     @Bean

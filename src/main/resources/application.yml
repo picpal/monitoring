@@ -36,10 +36,14 @@ server:
     direct-buffers: true
   error:
     whitelabel:
-      enabled: false
-    servlet:
-      encoding:
-        force-response: true
+      enabled: false  # 기본 오류 페이지 비활성화
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: on_param
+    include-exception: false
+  servlet:
+    encoding:
+      force-response: true
 
 # Configure the server to run with SSL/TLS and using HTTPS
 #  port: 8443
