@@ -1,21 +1,31 @@
+# Spring Boot
 HELP.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+
+# Gradle Wrapper (Unix)
 gradlew
 
+# Logs
 logs/
+*.log
+ivy-*.log
 
-# Documentation files
-src/main/resources/static/docs/
-test_data.sql
-
-# H2 Database files
+# Database files
 *.mv.db
 *.trace.db
+*.db
+*.sqlite
+*.sqlite3
 
+
+# Documentation and temporary files
+src/main/resources/static/docs/
+
+# IDE files
 ### STS ###
 .apt_generated
 .classpath
@@ -29,14 +39,13 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
-!**/src/test/**/static/docs
 
 ### NetBeans ###
 /nbproject/private/
@@ -47,3 +56,8 @@ out/
 
 ### VS Code ###
 .vscode/
+*.code-workspace
+
+# JVM crash logs
+hs_err_pid*
+replay_pid*
