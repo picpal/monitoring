@@ -11,6 +11,8 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
 import com.picpal.framework.redmine.exception.RedmineException;
 import com.picpal.framework.redmine.config.RedmineConfig;
 
@@ -37,6 +39,14 @@ public class RedmineServiceImpl implements RedmineService {
             issue.put("project_id", issueDTO.getProjectId() != null ? issueDTO.getProjectId() : projectConfig.getId());
             issue.put("tracker_id", issueDTO.getTrackerId() != null ? issueDTO.getTrackerId() : projectConfig.getTrackerId());
             issue.put("priority_id", issueDTO.getPriorityId() != null ? issueDTO.getPriorityId() : projectConfig.getPriorityId());
+            
+            if (issueDTO.getCustomFields() != null && !issueDTO.getCustomFields().isEmpty()) {
+                List<Map<String, Object>> customFields = issueDTO.getCustomFields().stream()
+                    .map(this::convertCustomField)
+                    .collect(Collectors.toList());
+                issue.put("custom_fields", customFields);
+            }
+            
             requestBody.put("issue", issue);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -81,5 +91,12 @@ public class RedmineServiceImpl implements RedmineService {
             log.error("Redmine 연결 테스트 실패", e);
             throw new RedmineException("Redmine 연결 테스트 실패", e);
         }
+    }
+
+    private Map<String, Object> convertCustomField(RedmineIssueDTO.CustomField customField) {
+        Map<String, Object> field = new HashMap<>();
+        field.put("id", customField.getId());
+        field.put("value", customField.getValue());
+        return field;
     }
 } 

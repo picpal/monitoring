@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>모니터링 통계</title>
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/monitoring-report.css}">
+</head>
+<body>
+    <div class="w-full">
+        <table class="w-full border-collapse my-4 bg-white shadow-sm rounded-lg overflow-hidden">
+            <thead>
+                <tr>
+                    <th>구분</th>
+                    <th>총 요청</th>
+                    <th>성공</th>
+                    <th>실패</th>
+                    <th>성공률</th>
+                    <th>실패율</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- List 형태로 동적 반복 처리 예시 -->
+                <tr th:each="stat, iterStat : ${statisticsList}" 
+                    th:class="${iterStat.even} ? 'even-row' : 'odd-row'">
+                    <td><strong th:text="${stat.label}"></strong></td>
+                    <td th:text="${#numbers.formatInteger(stat.totalRequests, 0, 'COMMA')}"></td>
+                    <td th:text="${#numbers.formatInteger(stat.successRequests, 0, 'COMMA')}"></td>
+                    <td th:text="${#numbers.formatInteger(stat.failRequests, 0, 'COMMA')}"></td>
+                    <td class="success-rate" th:text="${stat.successRate} + '%'"></td>
+                    <td class="failure-rate" th:text="${stat.failureRate} + '%'"></td>
+                </tr>
+                
+                <!-- 기존 방식도 유지 (statisticsList가 없을 경우 fallback) -->
+                <th:block th:if="${statisticsList == null or #lists.isEmpty(statisticsList)}">
+                    <tr>
+                        <td><strong>오늘</strong></td>
+                        <td th:text="${#numbers.formatInteger(statistics.today.totalRequests, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(statistics.today.successRequests, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(statistics.today.failRequests, 0, 'COMMA')}"></td>
+                        <td class="success-rate" th:text="${statistics.today.successRate} + '%'"></td>
+                        <td class="failure-rate" th:text="${statistics.today.failureRate} + '%'"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>7일 전</strong></td>
+                        <td th:text="${#numbers.formatInteger(statistics.day7Ago.totalRequests, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(statistics.day7Ago.successRequests, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(statistics.day7Ago.failRequests, 0, 'COMMA')}"></td>
+                        <td class="success-rate" th:text="${statistics.day7Ago.successRate} + '%'"></td>
+                        <td class="failure-rate" th:text="${statistics.day7Ago.failureRate} + '%'"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>14일 전</strong></td>
+                        <td th:text="${#numbers.formatInteger(statistics.day14Ago.totalRequests, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(statistics.day14Ago.successRequests, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(statistics.day14Ago.failRequests, 0, 'COMMA')}"></td>
+                        <td class="success-rate" th:text="${statistics.day14Ago.successRate} + '%'"></td>
+                        <td class="failure-rate" th:text="${statistics.day14Ago.failureRate} + '%'"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>21일 전</strong></td>
+                        <td th:text="${#numbers.formatInteger(statistics.day21Ago.totalRequests, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(statistics.day21Ago.successRequests, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(statistics.day21Ago.failRequests, 0, 'COMMA')}"></td>
+                        <td class="success-rate" th:text="${statistics.day21Ago.successRate} + '%'"></td>
+                        <td class="failure-rate" th:text="${statistics.day21Ago.failureRate} + '%'"></td>
+                    </tr>
+                </th:block>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

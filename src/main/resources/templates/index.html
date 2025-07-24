@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${systemName} + ' - 홈'">모니터링 시스템 - 홈</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .version {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+        
+        .hero {
+            text-align: center;
+            color: white;
+            margin-bottom: 4rem;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+        
+        .current-time {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .service-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .service-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .service-card h3 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .service-card p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e9ecef;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+        
+        .api-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .api-section h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+        
+        .api-endpoints {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .endpoint {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .endpoint .method {
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .endpoint .path {
+            font-family: 'Monaco', 'Menlo', monospace;
+            color: #333;
+            margin: 0.25rem 0;
+        }
+        
+        .endpoint .desc {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .main-container {
+                padding: 2rem 1rem;
+            }
+            
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo" th:text="${systemName}">모니터링 시스템</div>
+            <div class="version" th:text="'v' + ${version}">v1.0.0</div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <section class="hero">
+            <h1>거래 모니터링 시스템</h1>
+            <p>실시간 거래 데이터 분석과 이상 패턴 감지를 통해 안전한 금융 서비스를 제공합니다</p>
+            <div class="current-time">
+                🕐 현재 시간: <span th:text="${#temporals.format(currentTime, 'yyyy-MM-dd HH:mm:ss')}">2024-01-15 14:30:00</span>
+            </div>
+        </section>
+
+        <section class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">📊</div>
+                <h3>모니터링 대시보드</h3>
+                <p>실시간 거래 현황과 분석 결과를 직관적인 차트와 그래프로 확인할 수 있습니다.</p>
+                <a href="/monitoring/report" class="btn">리포트 보기</a>
+            </div>
+
+            <div class="service-card">
+                <div class="service-icon">🔍</div>
+                <h3>API 모니터링</h3>
+                <p>RESTful API를 통해 모니터링 작업을 실행하고 결과를 조회할 수 있습니다.</p>
+                <a href="/swagger-ui/index.html" class="btn btn-secondary">API 문서</a>
+            </div>
+
+            <div class="service-card">
+                <div class="service-icon">🎯</div>
+                <h3>이슈 관리</h3>
+                <p>감지된 이상 패턴을 자동으로 Redmine 이슈로 등록하여 효율적으로 관리합니다.</p>
+                <a href="#api-section" class="btn btn-secondary">API 확인</a>
+            </div>
+        </section>
+
+        <section class="api-section" id="api-section">
+            <h2>🚀 주요 API 엔드포인트</h2>
+            <div class="api-endpoints">
+                <div class="endpoint">
+                    <div class="method">POST</div>
+                    <div class="path">/api/monitoring/execute</div>
+                    <div class="desc">모니터링 실행</div>
+                </div>
+                <div class="endpoint">
+                    <div class="method">GET</div>
+                    <div class="path">/api/monitoring/status</div>
+                    <div class="desc">모니터링 상태 확인</div>
+                </div>
+                <div class="endpoint">
+                    <div class="method">POST</div>
+                    <div class="path">/api/redmine/issue/{key}</div>
+                    <div class="desc">Redmine 이슈 생성</div>
+                </div>
+                <div class="endpoint">
+                    <div class="method">GET</div>
+                    <div class="path">/monitoring/report</div>
+                    <div class="desc">모니터링 리포트 뷰</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>© 2024 모니터링 시스템. 안전한 금융 서비스를 위한 실시간 거래 분석 솔루션</p>
+    </footer>
+</body>
+</html>

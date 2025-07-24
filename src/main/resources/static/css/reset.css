@@ -1,0 +1,87 @@
+/* Reset CSS for Monitoring Reports */
+
+/* Base Reset */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #ffffff;
+    color: #1f2937;
+}
+
+/* Remove list styles */
+ul, ol {
+    list-style: none;
+}
+
+/* Remove button styles */
+button {
+    border: none;
+    background: none;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+/* Remove input styles */
+input, textarea, select {
+    font-family: inherit;
+}
+
+/* Remove link underlines */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Improve image rendering */
+img, picture, video, canvas, svg {
+    display: block;
+    max-width: 100%;
+}
+
+/* Remove table spacing */
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+/* Form elements should inherit font */
+input, button, textarea, select {
+    font: inherit;
+}
+
+/* Avoid text overflows */
+p, h1, h2, h3, h4, h5, h6 {
+    overflow-wrap: break-word;
+}
+
+/* Remove fieldset styles */
+fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Remove legend styles */
+legend {
+    padding: 0;
+}
+
+/* Improve accessibility */
+[tabindex="-1"]:focus:not(:focus-visible) {
+    outline: 0 !important;
+}

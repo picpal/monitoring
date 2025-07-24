@@ -7,7 +7,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.picpal.framework"})
-@MapperScan("com.picpal.framework.monitoring.repository.mapper")
+@MapperScan({"com.picpal.framework.monitoring.repository.mapper", "com.picpal.framework.monitoring.mapper"})
 public class MonitoringApplication {
 
 	public static void main(String[] args) {

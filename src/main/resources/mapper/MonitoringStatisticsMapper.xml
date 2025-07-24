@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.picpal.framework.monitoring.mapper.MonitoringStatisticsMapper">
+
+    <!-- 전체 요청 건수 조회 (70일간) -->
+    <select id="getAllRequestCounts" parameterType="com.picpal.framework.monitoring.dto.MonitoringStatisticsDTO$QueryParams"
+            resultType="com.picpal.framework.monitoring.dto.MonitoringStatisticsDTO$RequestCount">
+        WITH base AS (
+            SELECT 
+                #{dday} AS d0,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 7,  'YYYYMMDD') AS d7,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 14, 'YYYYMMDD') AS d14,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 21, 'YYYYMMDD') AS d21,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 28, 'YYYYMMDD') AS d28,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 35, 'YYYYMMDD') AS d35,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 42, 'YYYYMMDD') AS d42,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 49, 'YYYYMMDD') AS d49,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 56, 'YYYYMMDD') AS d56,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 63, 'YYYYMMDD') AS d63,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 70, 'YYYYMMDD') AS d70,
+                #{ddtm} AS tm
+            FROM dual
+        )
+        SELECT
+            t.result_cd AS resultCd,
+            t.result_msg AS resultMsg,
+            SUM(CASE WHEN t.req_dt = b.d0  AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d0Cnt,
+            SUM(CASE WHEN t.req_dt = b.d7  AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d7Cnt,
+            SUM(CASE WHEN t.req_dt = b.d14 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d14Cnt,
+            SUM(CASE WHEN t.req_dt = b.d21 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d21Cnt,
+            SUM(CASE WHEN t.req_dt = b.d28 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d28Cnt,
+            SUM(CASE WHEN t.req_dt = b.d35 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d35Cnt,
+            SUM(CASE WHEN t.req_dt = b.d42 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d42Cnt,
+            SUM(CASE WHEN t.req_dt = b.d49 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d49Cnt,
+            SUM(CASE WHEN t.req_dt = b.d56 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d56Cnt,
+            SUM(CASE WHEN t.req_dt = b.d63 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d63Cnt,
+            SUM(CASE WHEN t.req_dt = b.d70 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d70Cnt
+        FROM request_table t
+        CROSS JOIN base b
+        WHERE t.req_dt IN (b.d0, b.d7, b.d14, b.d21, b.d28, b.d35, b.d42, b.d49, b.d56, b.d63, b.d70)
+        GROUP BY t.result_cd, t.result_msg
+        ORDER BY t.result_cd, t.result_msg
+    </select>
+
+    <!-- 승인 요청 건수 조회 -->
+    <select id="getApprovalRequests" parameterType="com.picpal.framework.monitoring.dto.MonitoringStatisticsDTO$QueryParams"
+            resultType="com.picpal.framework.monitoring.dto.MonitoringStatisticsDTO$RequestCount">
+        WITH base AS (
+            SELECT 
+                #{dday} AS d0,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 7,  'YYYYMMDD') AS d7,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 14, 'YYYYMMDD') AS d14,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 21, 'YYYYMMDD') AS d21,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 28, 'YYYYMMDD') AS d28,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 35, 'YYYYMMDD') AS d35,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 42, 'YYYYMMDD') AS d42,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 49, 'YYYYMMDD') AS d49,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 56, 'YYYYMMDD') AS d56,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 63, 'YYYYMMDD') AS d63,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 70, 'YYYYMMDD') AS d70,
+                #{ddtm} AS tm
+            FROM dual
+        )
+        SELECT
+            t.result_cd AS resultCd,
+            t.result_msg AS resultMsg,
+            SUM(CASE WHEN t.req_dt = b.d0  AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d0Cnt,
+            SUM(CASE WHEN t.req_dt = b.d7  AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d7Cnt,
+            SUM(CASE WHEN t.req_dt = b.d14 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d14Cnt,
+            SUM(CASE WHEN t.req_dt = b.d21 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d21Cnt,
+            SUM(CASE WHEN t.req_dt = b.d28 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d28Cnt,
+            SUM(CASE WHEN t.req_dt = b.d35 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d35Cnt,
+            SUM(CASE WHEN t.req_dt = b.d42 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d42Cnt,
+            SUM(CASE WHEN t.req_dt = b.d49 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d49Cnt,
+            SUM(CASE WHEN t.req_dt = b.d56 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d56Cnt,
+            SUM(CASE WHEN t.req_dt = b.d63 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d63Cnt,
+            SUM(CASE WHEN t.req_dt = b.d70 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d70Cnt
+        FROM approval_request_table t
+        CROSS JOIN base b
+        WHERE t.req_dt IN (b.d0, b.d7, b.d14, b.d21, b.d28, b.d35, b.d42, b.d49, b.d56, b.d63, b.d70)
+        GROUP BY t.result_cd, t.result_msg
+        ORDER BY t.result_cd, t.result_msg
+    </select>
+
+    <!-- 취소 요청 건수 조회 -->
+    <select id="getCancelRequests" parameterType="com.picpal.framework.monitoring.dto.MonitoringStatisticsDTO$QueryParams"
+            resultType="com.picpal.framework.monitoring.dto.MonitoringStatisticsDTO$RequestCount">
+        WITH base AS (
+            SELECT 
+                #{dday} AS d0,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 7,  'YYYYMMDD') AS d7,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 14, 'YYYYMMDD') AS d14,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 21, 'YYYYMMDD') AS d21,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 28, 'YYYYMMDD') AS d28,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 35, 'YYYYMMDD') AS d35,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 42, 'YYYYMMDD') AS d42,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 49, 'YYYYMMDD') AS d49,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 56, 'YYYYMMDD') AS d56,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 63, 'YYYYMMDD') AS d63,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 70, 'YYYYMMDD') AS d70,
+                #{ddtm} AS tm
+            FROM dual
+        )
+        SELECT
+            t.result_cd AS resultCd,
+            t.result_msg AS resultMsg,
+            SUM(CASE WHEN t.req_dt = b.d0  AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d0Cnt,
+            SUM(CASE WHEN t.req_dt = b.d7  AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d7Cnt,
+            SUM(CASE WHEN t.req_dt = b.d14 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d14Cnt,
+            SUM(CASE WHEN t.req_dt = b.d21 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d21Cnt,
+            SUM(CASE WHEN t.req_dt = b.d28 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d28Cnt,
+            SUM(CASE WHEN t.req_dt = b.d35 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d35Cnt,
+            SUM(CASE WHEN t.req_dt = b.d42 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d42Cnt,
+            SUM(CASE WHEN t.req_dt = b.d49 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d49Cnt,
+            SUM(CASE WHEN t.req_dt = b.d56 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d56Cnt,
+            SUM(CASE WHEN t.req_dt = b.d63 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d63Cnt,
+            SUM(CASE WHEN t.req_dt = b.d70 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d70Cnt
+        FROM cancel_request_table t
+        CROSS JOIN base b
+        WHERE t.req_dt IN (b.d0, b.d7, b.d14, b.d21, b.d28, b.d35, b.d42, b.d49, b.d56, b.d63, b.d70)
+        GROUP BY t.result_cd, t.result_msg
+        ORDER BY t.result_cd, t.result_msg
+    </select>
+
+    <!-- 요청 실패 건수 조회 -->
+    <select id="getFailRequests" parameterType="com.picpal.framework.monitoring.dto.MonitoringStatisticsDTO$QueryParams"
+            resultType="com.picpal.framework.monitoring.dto.MonitoringStatisticsDTO$RequestCount">
+        WITH base AS (
+            SELECT 
+                #{dday} AS d0,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 7,  'YYYYMMDD') AS d7,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 14, 'YYYYMMDD') AS d14,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 21, 'YYYYMMDD') AS d21,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 28, 'YYYYMMDD') AS d28,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 35, 'YYYYMMDD') AS d35,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 42, 'YYYYMMDD') AS d42,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 49, 'YYYYMMDD') AS d49,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 56, 'YYYYMMDD') AS d56,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 63, 'YYYYMMDD') AS d63,
+                TO_CHAR(TO_DATE(#{dday},'YYYYMMDD') - 70, 'YYYYMMDD') AS d70,
+                #{ddtm} AS tm
+            FROM dual
+        )
+        SELECT
+            t.result_cd AS resultCd,
+            t.result_msg AS resultMsg,
+            SUM(CASE WHEN t.req_dt = b.d0  AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d0Cnt,
+            SUM(CASE WHEN t.req_dt = b.d7  AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d7Cnt,
+            SUM(CASE WHEN t.req_dt = b.d14 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d14Cnt,
+            SUM(CASE WHEN t.req_dt = b.d21 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d21Cnt,
+            SUM(CASE WHEN t.req_dt = b.d28 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d28Cnt,
+            SUM(CASE WHEN t.req_dt = b.d35 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d35Cnt,
+            SUM(CASE WHEN t.req_dt = b.d42 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d42Cnt,
+            SUM(CASE WHEN t.req_dt = b.d49 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d49Cnt,
+            SUM(CASE WHEN t.req_dt = b.d56 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d56Cnt,
+            SUM(CASE WHEN t.req_dt = b.d63 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d63Cnt,
+            SUM(CASE WHEN t.req_dt = b.d70 AND t.req_tm &lt;= b.tm THEN 1 ELSE 0 END) AS d70Cnt
+        FROM fail_request_table t
+        CROSS JOIN base b
+        WHERE t.req_dt IN (b.d0, b.d7, b.d14, b.d21, b.d28, b.d35, b.d42, b.d49, b.d56, b.d63, b.d70)
+        GROUP BY t.result_cd, t.result_msg
+        ORDER BY t.result_cd, t.result_msg
+    </select>
+
+</mapper>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>모니터링 상세 통계</title>
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/monitoring-report.css}">
+</head>
+<body>
+    <div class="max-w-7xl mx-auto p-5">
+        <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">📊 모니터링 상세 통계 리포트</h2>
+        
+        <!-- 1. 전체 요청 요약 표 -->
+        <div class="my-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 border-blue-500">
+            <h3 class="text-2xl font-semibold text-blue-700 mb-6 pb-3 border-b-2 border-blue-500">📈 전체 요청 요약</h3>
+            <table class="w-full border-collapse my-4 bg-white shadow-sm rounded-lg overflow-hidden">
+                <thead>
+                    <tr>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">구분</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">총 요청</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">승인</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">취소</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">실패</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">승인율</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">취소율</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">실패율</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="hover:bg-blue-50 table-hover-transition">
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm font-bold">전체</td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(statistics.summary.totalRequests, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(statistics.summary.approvalCount, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(statistics.summary.cancelCount, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(statistics.summary.failCount, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm rate-high" th:text="${statistics.summary.approvalRate} + '%'"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm rate-medium" th:text="${statistics.summary.cancelRate} + '%'"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm rate-low" th:text="${statistics.summary.failRate} + '%'"></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- 7일 단위 추이 -->
+            <h4 class="text-lg font-medium text-gray-700 mb-4">📅 7일 단위 요청 추이</h4>
+            <table class="w-full border-collapse my-4 bg-white shadow-sm rounded-lg overflow-hidden">
+                <thead>
+                    <tr>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">오늘</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">7일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">14일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">21일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">28일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">35일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">42일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">49일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">56일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">63일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-blue-50 text-blue-800">70일전</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="hover:bg-blue-50 table-hover-transition">
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(statistics.summary.d0Total, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(statistics.summary.d7Total, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(statistics.summary.d14Total, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(statistics.summary.d21Total, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(statistics.summary.d28Total, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(statistics.summary.d35Total, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(statistics.summary.d42Total, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(statistics.summary.d49Total, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(statistics.summary.d56Total, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(statistics.summary.d63Total, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(statistics.summary.d70Total, 0, 'COMMA')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 2. 승인 요청 상세 -->
+        <div class="my-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 border-green-500">
+            <h3 class="text-2xl font-semibold text-green-700 mb-6 pb-3 border-b-2 border-green-500">✅ 승인 요청 상세</h3>
+            <table class="w-full border-collapse my-4 bg-white shadow-sm rounded-lg overflow-hidden">
+                <thead>
+                    <tr>
+                        <th>결과코드</th>
+                        <th>결과메시지</th>
+                        <th>오늘</th>
+                        <th>7일전</th>
+                        <th>14일전</th>
+                        <th>21일전</th>
+                        <th>28일전</th>
+                        <th>35일전</th>
+                        <th>42일전</th>
+                        <th>49일전</th>
+                        <th>56일전</th>
+                        <th>63일전</th>
+                        <th>70일전</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="approval : ${statistics.approvalRequests}">
+                        <td th:text="${approval.resultCd}"></td>
+                        <td th:text="${approval.resultMsg}"></td>
+                        <td th:text="${#numbers.formatInteger(approval.d0Cnt, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(approval.d7Cnt, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(approval.d14Cnt, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(approval.d21Cnt, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(approval.d28Cnt, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(approval.d35Cnt, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(approval.d42Cnt, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(approval.d49Cnt, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(approval.d56Cnt, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(approval.d63Cnt, 0, 'COMMA')}"></td>
+                        <td th:text="${#numbers.formatInteger(approval.d70Cnt, 0, 'COMMA')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 3. 취소 요청 상세 -->
+        <div class="my-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 border-orange-500">
+            <h3 class="text-2xl font-semibold text-orange-700 mb-6 pb-3 border-b-2 border-orange-500">🔄 취소 요청 상세</h3>
+            <table class="w-full border-collapse my-4 bg-white shadow-sm rounded-lg overflow-hidden">
+                <thead>
+                    <tr>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-orange-50 text-orange-800">결과코드</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-orange-50 text-orange-800">결과메시지</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-orange-50 text-orange-800">오늘</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-orange-50 text-orange-800">7일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-orange-50 text-orange-800">14일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-orange-50 text-orange-800">21일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-orange-50 text-orange-800">28일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-orange-50 text-orange-800">35일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-orange-50 text-orange-800">42일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-orange-50 text-orange-800">49일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-orange-50 text-orange-800">56일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-orange-50 text-orange-800">63일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-orange-50 text-orange-800">70일전</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="cancel : ${statistics.cancelRequests}" class="hover:bg-orange-50 table-hover-transition">
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${cancel.resultCd}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${cancel.resultMsg}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(cancel.d0Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(cancel.d7Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(cancel.d14Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(cancel.d21Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(cancel.d28Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(cancel.d35Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(cancel.d42Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(cancel.d49Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(cancel.d56Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(cancel.d63Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(cancel.d70Cnt, 0, 'COMMA')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 4. 요청 실패 상세 -->
+        <div class="my-8 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 border-red-500">
+            <h3 class="text-2xl font-semibold text-red-700 mb-6 pb-3 border-b-2 border-red-500">❌ 요청 실패 상세</h3>
+            <table class="w-full border-collapse my-4 bg-white shadow-sm rounded-lg overflow-hidden">
+                <thead>
+                    <tr>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-red-50 text-red-800">결과코드</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-red-50 text-red-800">결과메시지</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-red-50 text-red-800">오늘</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-red-50 text-red-800">7일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-red-50 text-red-800">14일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-red-50 text-red-800">21일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-red-50 text-red-800">28일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-red-50 text-red-800">35일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-red-50 text-red-800">42일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-red-50 text-red-800">49일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-red-50 text-red-800">56일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-red-50 text-red-800">63일전</th>
+                        <th class="border border-gray-300 px-3 py-2 text-center font-semibold text-sm bg-red-50 text-red-800">70일전</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="fail : ${statistics.failRequests}" class="hover:bg-red-50 table-hover-transition">
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${fail.resultCd}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${fail.resultMsg}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(fail.d0Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(fail.d7Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(fail.d14Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(fail.d21Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(fail.d28Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(fail.d35Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(fail.d42Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(fail.d49Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(fail.d56Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(fail.d63Cnt, 0, 'COMMA')}"></td>
+                        <td class="border border-gray-300 px-3 py-2 text-center text-sm" th:text="${#numbers.formatInteger(fail.d70Cnt, 0, 'COMMA')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

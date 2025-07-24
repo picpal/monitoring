@@ -8,6 +8,14 @@ gradlew
 
 logs/
 
+# Documentation files
+src/main/resources/static/docs/
+test_data.sql
+
+# H2 Database files
+*.mv.db
+*.trace.db
+
 ### STS ###
 .apt_generated
 .classpath

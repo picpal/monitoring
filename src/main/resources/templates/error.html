@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오류 - 모니터링 시스템</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .error-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        .error-icon {
+            font-size: 4rem;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+        .error-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        .error-status {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .error-message {
+            color: #888;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .error-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background-color: #f8f9fa;
+            color: #333;
+            border: 2px solid #e9ecef;
+        }
+        .btn-secondary:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+        }
+        .error-details {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">⚠️</div>
+        
+        <h1 class="error-title">오류가 발생했습니다</h1>
+        
+        <div class="error-status" th:if="${status}">
+            HTTP <span th:text="${status}">404</span>
+        </div>
+        
+        <div class="error-message">
+            <p th:if="${error}" th:text="${error}">요청하신 페이지를 찾을 수 없습니다.</p>
+            <p th:unless="${error}">요청하신 페이지를 찾을 수 없습니다.</p>
+        </div>
+        
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">홈으로 돌아가기</a>
+            <a href="/monitoring/report" class="btn btn-secondary">모니터링 리포트</a>
+        </div>
+        
+        <div class="error-details" th:if="${path}">
+            <strong>요청 경로:</strong> <span th:text="${path}">/unknown</span><br>
+            <strong>시간:</strong> <span th:text="${#temporals.format(timestamp, 'yyyy-MM-dd HH:mm:ss')}">${timestamp}</span>
+        </div>
+    </div>
+</body>
+</html>

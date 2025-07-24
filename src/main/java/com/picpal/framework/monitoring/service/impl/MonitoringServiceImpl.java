@@ -7,6 +7,8 @@ import com.picpal.framework.monitoring.repository.MonitoringResultRepository;
 import com.picpal.framework.monitoring.repository.model.MonitoringResult;
 import com.picpal.framework.monitoring.service.MonitoringService;
 import com.picpal.framework.monitoring.service.TransactionAnalysisService;
+import com.picpal.framework.monitoring.mapper.MonitoringStatisticsMapper;
+import com.picpal.framework.monitoring.dto.MonitoringStatisticsDTO;
 import com.picpal.framework.redmine.dto.RedmineIssueDTO;
 import com.picpal.framework.redmine.service.RedmineService;
 import com.picpal.framework.monitoring.vo.TransactionAnalysisVO;
@@ -15,8 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 import com.picpal.framework.monitoring.exception.MonitoringException;
 
@@ -29,6 +34,7 @@ public class MonitoringServiceImpl implements MonitoringService {
     private final ThymeleafTemplateGenerator templateGenerator;
     private final MonitoringResultRepository monitoringResultRepository;
     private final RedmineService redmineService;
+    private final MonitoringStatisticsMapper statisticsMapper;
 
     @Override
     public MonitoringResultDTO executeMonitoring(String analysisPeriod) {
@@ -54,8 +60,11 @@ public class MonitoringServiceImpl implements MonitoringService {
             // 1. 거래 데이터 분석
             TransactionAnalysisVO analysisVO = transactionAnalysisService.analyzeTransactions(startDate, endDate, analysisPeriod);
             
-            // 2. HTML 생성
-            String htmlContent = templateGenerator.generateTransactionReportHtml(analysisVO);
+            // 2. 통계 데이터 생성
+            MonitoringStatisticsDTO.StatisticsResponse statistics = generateStatisticsData();
+            
+            // 3. HTML 생성 (거래 분석 + 통계) - Thymeleaf 사용
+            String htmlContent = templateGenerator.generateComprehensiveReportHtml(analysisVO, statistics);
             
             // 3. 결과 설정
             resultDTO.setTotalTransactions(analysisVO.getTotalTransactions());
@@ -214,4 +223,132 @@ public class MonitoringServiceImpl implements MonitoringService {
                 .errorMessage(dto.getErrorMessage())
                 .build();
     }
-} 
+
+    /**
+     * 통계 데이터 생성
+     */
+    private MonitoringStatisticsDTO.StatisticsResponse generateStatisticsData() {
+        LocalDateTime now = LocalDateTime.now();
+        String dday = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String ddtm = now.format(DateTimeFormatter.ofPattern("HHmmss"));
+        
+        MonitoringStatisticsDTO.QueryParams params = MonitoringStatisticsDTO.QueryParams.builder()
+                .dday(dday)
+                .ddtm(ddtm)
+                .build();
+        
+        // 각 카테고리별 데이터 조회
+        List<MonitoringStatisticsDTO.RequestCount> allRequests = statisticsMapper.getAllRequestCounts(params);
+        List<MonitoringStatisticsDTO.RequestCount> approvalRequests = statisticsMapper.getApprovalRequests(params);
+        List<MonitoringStatisticsDTO.RequestCount> cancelRequests = statisticsMapper.getCancelRequests(params);
+        List<MonitoringStatisticsDTO.RequestCount> failRequests = statisticsMapper.getFailRequests(params);
+        
+        // 전체 요약 통계 계산
+        MonitoringStatisticsDTO.SummaryStatistics summary = calculateSummaryStatistics(
+                allRequests, approvalRequests, cancelRequests, failRequests);
+        
+        return MonitoringStatisticsDTO.StatisticsResponse.builder()
+                .summary(summary)
+                .approvalRequests(approvalRequests)
+                .cancelRequests(cancelRequests)
+                .failRequests(failRequests)
+                .build();
+    }
+    
+    /**
+     * 전체 요약 통계 계산
+     */
+    private MonitoringStatisticsDTO.SummaryStatistics calculateSummaryStatistics(
+            List<MonitoringStatisticsDTO.RequestCount> allRequests,
+            List<MonitoringStatisticsDTO.RequestCount> approvalRequests,
+            List<MonitoringStatisticsDTO.RequestCount> cancelRequests,
+            List<MonitoringStatisticsDTO.RequestCount> failRequests) {
+        
+        // 전체 합계 계산
+        long totalRequests = calculateTotalCount(allRequests);
+        long approvalCount = calculateTotalCount(approvalRequests);
+        long cancelCount = calculateTotalCount(cancelRequests);
+        long failCount = calculateTotalCount(failRequests);
+        
+        // 비율 계산
+        BigDecimal approvalRate = calculateRate(approvalCount, totalRequests);
+        BigDecimal cancelRate = calculateRate(cancelCount, totalRequests);
+        BigDecimal failRate = calculateRate(failCount, totalRequests);
+        
+        return MonitoringStatisticsDTO.SummaryStatistics.builder()
+                .totalRequests(totalRequests)
+                .approvalCount(approvalCount)
+                .cancelCount(cancelCount)
+                .failCount(failCount)
+                .approvalRate(approvalRate)
+                .cancelRate(cancelRate)
+                .failRate(failRate)
+                // 7일 단위 총계
+                .d0Total(sumCountsByDay(allRequests, "d0"))
+                .d7Total(sumCountsByDay(allRequests, "d7"))
+                .d14Total(sumCountsByDay(allRequests, "d14"))
+                .d21Total(sumCountsByDay(allRequests, "d21"))
+                .d28Total(sumCountsByDay(allRequests, "d28"))
+                .d35Total(sumCountsByDay(allRequests, "d35"))
+                .d42Total(sumCountsByDay(allRequests, "d42"))
+                .d49Total(sumCountsByDay(allRequests, "d49"))
+                .d56Total(sumCountsByDay(allRequests, "d56"))
+                .d63Total(sumCountsByDay(allRequests, "d63"))
+                .d70Total(sumCountsByDay(allRequests, "d70"))
+                .build();
+    }
+    
+    /**
+     * 전체 카운트 합계 계산
+     */
+    private long calculateTotalCount(List<MonitoringStatisticsDTO.RequestCount> counts) {
+        return counts.stream()
+                .mapToLong(count -> 
+                    (count.getD0Cnt() != null ? count.getD0Cnt() : 0L) +
+                    (count.getD7Cnt() != null ? count.getD7Cnt() : 0L) +
+                    (count.getD14Cnt() != null ? count.getD14Cnt() : 0L) +
+                    (count.getD21Cnt() != null ? count.getD21Cnt() : 0L) +
+                    (count.getD28Cnt() != null ? count.getD28Cnt() : 0L) +
+                    (count.getD35Cnt() != null ? count.getD35Cnt() : 0L) +
+                    (count.getD42Cnt() != null ? count.getD42Cnt() : 0L) +
+                    (count.getD49Cnt() != null ? count.getD49Cnt() : 0L) +
+                    (count.getD56Cnt() != null ? count.getD56Cnt() : 0L) +
+                    (count.getD63Cnt() != null ? count.getD63Cnt() : 0L) +
+                    (count.getD70Cnt() != null ? count.getD70Cnt() : 0L)
+                )
+                .sum();
+    }
+    
+    private long sumCountsByDay(List<MonitoringStatisticsDTO.RequestCount> counts, String dayField) {
+        return counts.stream()
+                .mapToLong(count -> getCountByDay(count, dayField))
+                .sum();
+    }
+    
+    private long getCountByDay(MonitoringStatisticsDTO.RequestCount count, String dayField) {
+        switch (dayField) {
+            case "d0": return count.getD0Cnt() != null ? count.getD0Cnt() : 0L;
+            case "d7": return count.getD7Cnt() != null ? count.getD7Cnt() : 0L;
+            case "d14": return count.getD14Cnt() != null ? count.getD14Cnt() : 0L;
+            case "d21": return count.getD21Cnt() != null ? count.getD21Cnt() : 0L;
+            case "d28": return count.getD28Cnt() != null ? count.getD28Cnt() : 0L;
+            case "d35": return count.getD35Cnt() != null ? count.getD35Cnt() : 0L;
+            case "d42": return count.getD42Cnt() != null ? count.getD42Cnt() : 0L;
+            case "d49": return count.getD49Cnt() != null ? count.getD49Cnt() : 0L;
+            case "d56": return count.getD56Cnt() != null ? count.getD56Cnt() : 0L;
+            case "d63": return count.getD63Cnt() != null ? count.getD63Cnt() : 0L;
+            case "d70": return count.getD70Cnt() != null ? count.getD70Cnt() : 0L;
+            default: return 0L;
+        }
+    }
+    
+    private BigDecimal calculateRate(long numerator, long denominator) {
+        if (denominator == 0) {
+            return BigDecimal.ZERO;
+        }
+        return BigDecimal.valueOf(numerator)
+                .multiply(new BigDecimal("100"))
+                .divide(BigDecimal.valueOf(denominator), 2, RoundingMode.HALF_UP);
+    }
+
+}

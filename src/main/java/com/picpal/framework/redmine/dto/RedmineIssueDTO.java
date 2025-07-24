@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.util.List;
 
 @Data
 @Builder
@@ -15,6 +16,16 @@ public class RedmineIssueDTO {
     private Integer projectId;
     private Integer trackerId;
     private Integer priorityId;
-    private String customFields;
+    private List<CustomField> customFields;
     private String notes;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CustomField {
+        private Integer id;
+        private String value;
+        private String name;
+    }
 } 
